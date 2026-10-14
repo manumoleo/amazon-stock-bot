@@ -1,4 +1,21 @@
 const JSON_HEADERS = { "Content-Type": "application/json; charset=utf-8" };
+const AMAZON_HEADERS = {
+  "Accept-Language": "es-ES,es;q=0.9",
+  "User-Agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+};
+const PRODUCTS = [
+  {
+    asin: "B0F2T6WM33",
+    name: "Nintendo Switch 2 Pro Controller Zelda 40 Aniversario",
+    url: "https://www.amazon.es/dp/B0F2T6WM33",
+  },
+  {
+    asin: "B0F2TN43GH",
+    name: "Nintendo Switch 2 - The Legend of Zelda Edition",
+    url: "https://www.amazon.es/dp/B0F2TN43GH",
+  },
+];
 
 export default {
   async fetch(request, env, context) {
@@ -37,45 +54,75 @@ export default {
       receivedChatId === expectedChatId &&
       /^\/comprobar(?:@\w+)?(?:\s|$)/i.test(command)
     ) {
-      context.waitUntil(triggerCheck(env));
+      context.waitUntil(checkAndNotify(env, true));
     }
 
     return jsonResponse({ ok: true });
   },
+  async scheduled(controller, env, context) {
+    context.waitUntil(checkAndNotify(env, false));
+  },
 };
 
-async function triggerCheck(env) {
-  try {
-    const response = await fetch(
-      `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/actions/workflows/${env.GITHUB_WORKFLOW}/dispatches`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/vnd.github+json",
-          Authorization: `Bearer ${env.GITHUB_ACTIONS_TOKEN}`,
-          "Content-Type": "application/json",
-          "User-Agent": "amazon-stock-telegram-command",
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-        body: JSON.stringify({ ref: env.GITHUB_REF }),
-      },
-    );
+async function checkAndNotify(env, requestedFromTelegram) {
+  if (requestedFromTelegram) {
+    await sendTelegramMessage(env, "Comprobación iniciada.");
+  }
 
-    if (!response.ok) {
-      const details = await response.text();
-      throw new Error(`GitHub ${response.status}: ${details.slice(0, 300)}`);
+  const results = await Promise.all(PRODUCTS.map(fetchAmazonProduct));
+  const statusLabels = {
+    available: "DISPONIBLE",
+    unavailable: "NO DISPONIBLE",
+    unknown: "NO SE PUDO COMPROBAR",
+  };
+  const lines = ["Estado actual de los productos de Amazon:", ""];
+
+  for (const result of results) {
+    lines.push(
+      result.name,
+      `Estado: ${statusLabels[result.status]}`,
+      result.url,
+      "",
+    );
+    console.log(`${result.asin}: ${result.status} - ${result.detail}`);
+  }
+
+  await sendTelegramMessage(env, lines.join("\n").trim());
+}
+
+async function fetchAmazonProduct(product) {
+  try {
+    const response = await fetch(product.url, { headers: AMAZON_HEADERS });
+    const page = await response.text();
+    const loweredPage = page.toLowerCase();
+
+    if (
+      loweredPage.includes("/errors/validatecaptcha") ||
+      loweredPage.includes("enter the characters you see below") ||
+      loweredPage.includes("api-services-support@amazon.com")
+    ) {
+      return { ...product, status: "unknown", detail: "Comprobación anti-bot" };
     }
 
-    await sendTelegramMessage(
-      env,
-      "Comprobación iniciada. El resultado llegará en unos segundos.",
-    );
+    const outOfStockElement = /id=["']outofstock["']/i.test(page);
+    const unavailableAvailability =
+      /id=["']availability["'][\s\S]{0,3000}(actualmente no disponible|agotado temporalmente|temporalmente sin stock)/i.test(
+        page,
+      );
+    if (outOfStockElement || unavailableAvailability) {
+      return { ...product, status: "unavailable", detail: "Sin stock" };
+    }
+
+    if (
+      loweredPage.includes('id="add-to-cart-button"') ||
+      loweredPage.includes('id="buy-now-button"')
+    ) {
+      return { ...product, status: "available", detail: "Botón de compra encontrado" };
+    }
+
+    return { ...product, status: "unknown", detail: `HTTP ${response.status}` };
   } catch (error) {
-    console.error("No se pudo iniciar la comprobación", error);
-    await sendTelegramMessage(
-      env,
-      "No se pudo iniciar la comprobación. Inténtalo de nuevo más tarde.",
-    );
+    return { ...product, status: "unknown", detail: String(error) };
   }
 }
 
