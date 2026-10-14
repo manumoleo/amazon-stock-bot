@@ -9,18 +9,11 @@ productos de Amazon España:
 En cada comprobación envía al grupo de Telegram un resumen con el estado de los
 dos productos: disponible, no disponible o no se pudo comprobar.
 
-El estado genera como máximo una actualización mensual del repositorio para
-evitar que GitHub desactive la tarea programada por inactividad.
-
 ## Configuración
 
-1. Crea un repositorio público en GitHub y sube todos estos archivos.
-2. Abre `Settings > Secrets and variables > Actions` en el repositorio.
-3. Crea el secreto `TELEGRAM_BOT_TOKEN` con el token nuevo de BotFather.
-4. Crea el secreto `TELEGRAM_CHAT_ID` con el identificador del grupo.
-5. Abre `Actions > Comprobar disponibilidad` y pulsa `Run workflow`.
-
-Una ejecución manual también envía el resumen actual a Telegram.
+El servicio activo es `worker/src/index.js`, desplegado en Cloudflare Workers.
+La programación está en `wrangler.jsonc` y el webhook se configura mediante
+`.github/workflows/configure-telegram-webhook.yml`.
 
 ## Comprobación desde Telegram
 
@@ -52,14 +45,17 @@ unset TELEGRAM_BOT_TOKEN
 ```
 
 El identificador de un grupo suele ser un número negativo. Guárdalo en GitHub
-como `TELEGRAM_CHAT_ID`.
+como `TELEGRAM_CHAT_ID` y en Cloudflare como secreto del mismo nombre.
 
 ## Pruebas
 
 ```zsh
 python3 -m unittest -v
+node --check worker/src/index.js
+npx --yes wrangler@latest deploy --dry-run
 ```
 
 Amazon puede cambiar su página o bloquear temporalmente las consultas
 automáticas. En esos casos el mensaje indica que el producto no se pudo
-comprobar y el último estado conocido se conserva.
+comprobar. GitHub Actions queda solo como diagnóstico porque sus direcciones
+recibían comprobaciones anti-bot de Amazon.
