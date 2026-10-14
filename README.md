@@ -19,6 +19,9 @@ evitar que GitHub desactive la tarea programada por inactividad.
 4. Crea el secreto `TELEGRAM_CHAT_ID` con el identificador del grupo.
 5. Abre `Actions > Comprobar disponibilidad` y pulsa `Run workflow`.
 
+Para comprobar Telegram manualmente, activa `Enviar un mensaje de prueba a
+Telegram` antes de pulsar `Run workflow`.
+
 Los secretos no deben escribirse en ningún archivo ni publicarse en mensajes.
 
 ## Obtener el identificador del grupo

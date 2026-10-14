@@ -170,7 +170,7 @@ def save_state(state):
     STATE_FILE.write_text(content, encoding="utf-8")
 
 
-def send_telegram_message(products):
+def send_telegram_text(text):
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
     if not token or not chat_id:
@@ -178,14 +178,7 @@ def send_telegram_message(products):
             "Faltan los secretos TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID"
         )
 
-    lines = ["Hay productos disponibles en Amazon:", ""]
-    for product in products:
-        name = product["title"] or product["asin"]
-        lines.extend((f"{name}", product["url"], ""))
-
-    payload = json.dumps(
-        {"chat_id": chat_id, "text": "\n".join(lines).strip()}
-    ).encode("utf-8")
+    payload = json.dumps({"chat_id": chat_id, "text": text}).encode("utf-8")
     request = urllib.request.Request(
         f"https://api.telegram.org/bot{token}/sendMessage",
         data=payload,
@@ -206,7 +199,21 @@ def send_telegram_message(products):
         raise RuntimeError(f"Telegram ha rechazado el aviso: {result}")
 
 
+def send_availability_message(products):
+    lines = ["Hay productos disponibles en Amazon:", ""]
+    for product in products:
+        name = product["title"] or product["asin"]
+        lines.extend((f"{name}", product["url"], ""))
+    send_telegram_text("\n".join(lines).strip())
+
+
 def main():
+    if os.environ.get("SEND_TEST_NOTIFICATION", "").lower() == "true":
+        send_telegram_text(
+            "Prueba completada: los avisos de disponibilidad están funcionando."
+        )
+        print("Aviso de prueba enviado")
+
     previous_state = load_state()
     next_state = dict(previous_state)
     newly_available = []
@@ -231,7 +238,7 @@ def main():
         next_state[product["asin"]] = status
 
     if newly_available:
-        send_telegram_message(newly_available)
+        send_availability_message(newly_available)
         print(f"Aviso enviado para {len(newly_available)} producto(s)")
 
     if next_state != previous_state:
