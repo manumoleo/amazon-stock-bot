@@ -1,0 +1,12 @@
+{
+  "name": "amazon-stock-telegram-command",
+  "main": "worker/src/index.js",
+  "compatibility_date": "2026-10-14",
+  "workers_dev": true,
+  "vars": {
+    "GITHUB_OWNER": "manumoleo",
+    "GITHUB_REPO": "amazon-stock-bot",
+    "GITHUB_WORKFLOW": "check-stock.yml",
+    "GITHUB_REF": "main"
+  }
+}

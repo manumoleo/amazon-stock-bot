@@ -1,6 +1,6 @@
 # Avisos de disponibilidad de Amazon
 
-Comprueba cada 15 minutos la disponibilidad de estos productos de Amazon España:
+Comprueba cada 30 minutos la disponibilidad de estos productos de Amazon España:
 
 - `B0F2T6WM33`
 - `B0F2TN43GH`
@@ -20,6 +20,22 @@ evitar que GitHub desactive la tarea programada por inactividad.
 5. Abre `Actions > Comprobar disponibilidad` y pulsa `Run workflow`.
 
 Una ejecución manual también envía el resumen actual a Telegram.
+
+## Comprobación desde Telegram
+
+El Cloudflare Worker de `worker/src/index.js` recibe el comando `/comprobar`
+desde el grupo autorizado y activa inmediatamente `check-stock.yml`. Ignora los
+mensajes de otros chats y valida la firma secreta del webhook de Telegram.
+
+El Worker necesita estos secretos de Cloudflare:
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+- `TELEGRAM_WEBHOOK_SECRET`
+- `GITHUB_ACTIONS_TOKEN`
+
+`GITHUB_ACTIONS_TOKEN` debe ser un token de GitHub limitado a este repositorio y
+con permiso de escritura para Actions. No debe guardarse en archivos.
 
 Los secretos no deben escribirse en ningún archivo ni publicarse en mensajes.
 

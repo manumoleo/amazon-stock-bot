@@ -1,0 +1,26 @@
+name: Configurar webhook de Telegram
+
+on:
+  workflow_dispatch:
+    inputs:
+      worker_url:
+        description: "URL pública del Cloudflare Worker"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  configure-webhook:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar webhook
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+        run: python3 configure_telegram_webhook.py "${{ inputs.worker_url }}"
