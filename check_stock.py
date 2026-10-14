@@ -199,24 +199,30 @@ def send_telegram_text(text):
         raise RuntimeError(f"Telegram ha rechazado el aviso: {result}")
 
 
-def send_availability_message(products):
-    lines = ["Hay productos disponibles en Amazon:", ""]
+def send_status_message(products):
+    status_labels = {
+        "available": "DISPONIBLE",
+        "unavailable": "NO DISPONIBLE",
+        "unknown": "NO SE PUDO COMPROBAR",
+    }
+    lines = ["Estado actual de los productos de Amazon:", ""]
     for product in products:
         name = product["title"] or product["asin"]
-        lines.extend((f"{name}", product["url"], ""))
+        lines.extend(
+            (
+                name,
+                f"Estado: {status_labels[product['status']]}",
+                product["url"],
+                "",
+            )
+        )
     send_telegram_text("\n".join(lines).strip())
 
 
 def main():
-    if os.environ.get("SEND_TEST_NOTIFICATION", "").lower() == "true":
-        send_telegram_text(
-            "Prueba completada: los avisos de disponibilidad están funcionando."
-        )
-        print("Aviso de prueba enviado")
-
     previous_state = load_state()
     next_state = dict(previous_state)
-    newly_available = []
+    checked_products = []
 
     today = date.today()
     try:
@@ -230,16 +236,17 @@ def main():
         status, detail, title = fetch_product(product)
         print(f"{product['asin']}: {status} - {detail}")
 
+        checked_products.append(
+            {**product, "status": status, "title": title}
+        )
+
         if status == "unknown":
             continue
 
-        if status == "available" and previous_state.get(product["asin"]) != "available":
-            newly_available.append({**product, "title": title})
         next_state[product["asin"]] = status
 
-    if newly_available:
-        send_availability_message(newly_available)
-        print(f"Aviso enviado para {len(newly_available)} producto(s)")
+    send_status_message(checked_products)
+    print(f"Resumen enviado para {len(checked_products)} producto(s)")
 
     if next_state != previous_state:
         save_state(next_state)

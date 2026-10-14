@@ -5,8 +5,8 @@ Comprueba cada 15 minutos la disponibilidad de estos productos de Amazon España
 - `B0F2T6WM33`
 - `B0F2TN43GH`
 
-Cuando uno pasa a estar disponible, envía un aviso a un grupo de Telegram. No
-repite el aviso mientras el producto siga disponible.
+En cada comprobación envía al grupo de Telegram un resumen con el estado de los
+dos productos: disponible, no disponible o no se pudo comprobar.
 
 El estado genera como máximo una actualización mensual del repositorio para
 evitar que GitHub desactive la tarea programada por inactividad.
@@ -19,8 +19,7 @@ evitar que GitHub desactive la tarea programada por inactividad.
 4. Crea el secreto `TELEGRAM_CHAT_ID` con el identificador del grupo.
 5. Abre `Actions > Comprobar disponibilidad` y pulsa `Run workflow`.
 
-Para comprobar Telegram manualmente, activa `Enviar un mensaje de prueba a
-Telegram` antes de pulsar `Run workflow`.
+Una ejecución manual también envía el resumen actual a Telegram.
 
 Los secretos no deben escribirse en ningún archivo ni publicarse en mensajes.
 
@@ -46,4 +45,5 @@ python3 -m unittest -v
 ```
 
 Amazon puede cambiar su página o bloquear temporalmente las consultas
-automáticas. En esos casos el estado se conserva y no se genera un falso aviso.
+automáticas. En esos casos el mensaje indica que el producto no se pudo
+comprobar y el último estado conocido se conserva.
