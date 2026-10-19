@@ -3,7 +3,10 @@
   "main": "worker/src/index.js",
   "compatibility_date": "2026-10-14",
   "workers_dev": true,
+  "ai": {
+    "binding": "AI"
+  },
   "triggers": {
-    "crons": ["*/30 * * * *"]
+    "crons": ["* * * * *", "0 6,7 * * *"]
   }
 }

@@ -1,13 +1,19 @@
-# Avisos de disponibilidad de Amazon
+# Bot de avisos de Amazon y noticias
 
-El Cloudflare Worker comprueba cada 30 minutos la disponibilidad de estos
+El Cloudflare Worker comprueba cada minuto la disponibilidad de estos
 productos de Amazon España:
 
 - `B0F2T6WM33`
 - `B0F2TN43GH`
 
-En cada comprobación envía al grupo de Telegram un resumen con el estado de los
-dos productos: disponible, no disponible o no se pudo comprobar.
+Solo envía un resumen al grupo de Telegram cuando al menos uno de los productos
+está disponible. El resumen muestra el estado de ambos productos.
+
+Cada mañana a las 08:00, hora peninsular, también consulta titulares de las
+últimas 24 horas relacionados con el Gobierno de España y la Administración
+General del Estado. Workers AI selecciona hasta 12 noticias adversas concretas,
+las clasifica y descarta resultados autonómicos, locales, extranjeros o de
+opinión sin un hecho concreto. No se guarda un historial de noticias.
 
 ## Configuración
 
@@ -19,7 +25,12 @@ La programación está en `wrangler.jsonc` y el webhook se configura mediante
 
 El Cloudflare Worker de `worker/src/index.js` recibe el comando `/comprobar`
 desde el grupo autorizado y consulta Amazon inmediatamente. Ignora los mensajes
-de otros chats y valida la firma secreta del webhook de Telegram.
+de otros chats y valida la firma secreta del webhook de Telegram. El comando
+siempre responde con el estado de ambos productos, aunque ninguno esté disponible.
+
+El comando `/noticias` genera el resumen de noticias inmediatamente. La
+selección se basa en los titulares de Bing News y no sustituye la lectura de
+la fuente enlazada.
 
 El Worker necesita estos secretos de Cloudflare:
 
@@ -52,6 +63,7 @@ como `TELEGRAM_CHAT_ID` y en Cloudflare como secreto del mismo nombre.
 ```zsh
 python3 -m unittest -v
 node --check worker/src/index.js
+node --test worker/test/news.test.mjs
 npx --yes wrangler@latest deploy --dry-run
 ```
 
