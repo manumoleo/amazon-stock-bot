@@ -16,11 +16,6 @@ const PRODUCTS = [
     name: "Nintendo Switch 2 Pro Controller Zelda 40 Aniversario",
     url: "https://www.amazon.es/dp/B0F2T6WM33",
   },
-  {
-    asin: "B0F2TN43GH",
-    name: "Nintendo Switch 2 - The Legend of Zelda Edition",
-    url: "https://www.amazon.es/dp/B0F2TN43GH",
-  },
 ];
 const NEWS_QUERIES = [
   "\"Gobierno de España\" investigación",
@@ -106,7 +101,7 @@ async function checkAndNotify(env, requestedFromTelegram) {
     unavailable: "NO DISPONIBLE",
     unknown: "NO SE PUDO COMPROBAR",
   };
-  const lines = ["Estado actual de los productos de Amazon:", ""];
+  const lines = ["Estado actual del producto de Amazon:", ""];
 
   for (const result of results) {
     lines.push(

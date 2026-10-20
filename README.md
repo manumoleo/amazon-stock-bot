@@ -1,13 +1,12 @@
 # Bot de avisos de Amazon y noticias
 
-El Cloudflare Worker comprueba cada minuto la disponibilidad de estos
-productos de Amazon España:
+El Cloudflare Worker comprueba cada minuto la disponibilidad de este producto
+de Amazon España:
 
 - `B0F2T6WM33`
-- `B0F2TN43GH`
 
-Solo envía un resumen al grupo de Telegram cuando al menos uno de los productos
-está disponible. El resumen muestra el estado de ambos productos.
+Solo envía un resumen al grupo de Telegram cuando el producto está disponible.
+El resumen muestra el estado del mando.
 
 Cada mañana a las 08:00, hora peninsular, también consulta titulares de las
 últimas 24 horas relacionados con el Gobierno de España y la Administración
@@ -26,7 +25,7 @@ La programación está en `wrangler.jsonc` y el webhook se configura mediante
 El Cloudflare Worker de `worker/src/index.js` recibe el comando `/comprobar`
 desde el grupo autorizado y consulta Amazon inmediatamente. Ignora los mensajes
 de otros chats y valida la firma secreta del webhook de Telegram. El comando
-siempre responde con el estado de ambos productos, aunque ninguno esté disponible.
+siempre responde con el estado del mando, aunque no esté disponible.
 
 El comando `/noticias` genera el resumen de noticias inmediatamente. La
 selección se basa en los titulares de Bing News y no sustituye la lectura de
