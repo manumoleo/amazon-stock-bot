@@ -12,9 +12,9 @@ const AMAZON_HEADERS = {
 };
 const PRODUCTS = [
   {
-    asin: "B0F2T6WM33",
-    name: "Nintendo Switch 2 Pro Controller Zelda 40 Aniversario",
-    url: "https://www.amazon.es/dp/B0F2T6WM33",
+    asin: "B0HJ89X1VQ",
+    name: "Nintendo Switch 2 Carrying Case Zelda 40 Aniversario",
+    url: "https://www.amazon.es/dp/B0HJ89X1VQ",
   },
 ];
 const NEWS_QUERIES = [

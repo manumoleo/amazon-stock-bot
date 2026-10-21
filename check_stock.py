@@ -14,8 +14,8 @@ from pathlib import Path
 
 PRODUCTS = (
     {
-        "asin": "B0F2T6WM33",
-        "url": "https://www.amazon.es/dp/B0F2T6WM33",
+        "asin": "B0HJ89X1VQ",
+        "url": "https://www.amazon.es/dp/B0HJ89X1VQ",
     },
 )
 
